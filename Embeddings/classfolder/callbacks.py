@@ -16,5 +16,3 @@ class ThresholdAcc(tf.keras.callbacks.Callback):
     if logs.get('acc')>target_accuracy:
       print(f"\nReached {target_accuracy*100}% accuracy so cancelling training!")
       self.model.stop_training = True
-
-class
