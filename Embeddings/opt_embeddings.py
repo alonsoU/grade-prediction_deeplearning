@@ -10,6 +10,8 @@ import random
 import os
 
 def get_run_dir(model_path):
+    # Creates all directories specified by String model_path parameter, if any already exists
+    # create childs from there. Then creates a final child directory with the date as name.
     rootpath = pl.Path(os.curdir)
     import time
     model_path = pl.Path(model_path) / time.strftime("%Y-%m-%d_%H-%M-%S")
@@ -21,17 +23,21 @@ def get_run_dir(model_path):
 path = pl.Path('data/archivos_mayor-cleanframe.csv')
 print(psutil.virtual_memory())
 with open(path) as file:
+    # making sure all files are closed
     df = pd.read_csv(file).iloc[:, 1:]
     names = ['sede', 'ano', 'curso', 'semestre', 'asignatura',
              'profesor-rut']
     cats = df.drop(columns=["nota"])
     # nested dict{names:{categories: _ }}
-    cats = {column:{value:i+1 for i, value in enumerate(cats[column].unique())} for column in cats}
+    cats = {column:{value:i+1 for i, value in enumerate(sorted(cats[column].unique()))} for column in cats}
+    # Seting relevant categorical variables in order
     df = df.set_index(names, drop=True).sort_index()
+    # Groupng by them so every data partition is a specific course and their marks
     df = df.groupby(level=names)
     courses = []
     maxnum = 0
     for tuple in iter(df):
+        # tuple = metadata or categorical variables, (students, marks)
         pairs = tuple[1].to_numpy()
         courses.append((np.array(tuple[0], dtype=np.object), pairs))
         maxnum = np.amax([maxnum, len(pairs[:,1])])
@@ -41,11 +47,11 @@ print(cats["curso"])
 total_data = len(courses)
 print(maxnum)
 
-test_prop = 0.2
+test_prop = 0.0
 test_index = int(test_prop * total_data)
 train_data = courses[test_index:]
 test_data = courses[:test_index]
-val_prop = 0.2
+val_prop = 0.0
 val_index = int(len(train_data)*val_prop)
 val_data = train_data[:val_index]
 train_data = train_data[val_index:]
@@ -62,8 +68,8 @@ def transform(tuples):
     return meta_indices, marks
 
 def process_list(tuples_list):
-    # Toma array de tuplas (meta-data, alumno-nota) y las convierte en el input rquerido
-    # por el modelo ({names, alumno-rut}, {notas})
+    # Takes tuples array (meta-data, alumno-nota) and it convert
+    # them into the required input by the model ({names, alumno-rut}, {notas})
     inputs = {name:[] for name in names}
     inputs["alumno-rut"] = []
     marks = {"nota":[]}
@@ -96,10 +102,11 @@ train_data = tf.data.Dataset.from_tensor_slices(train_data)
 train_data = train_data.shuffle(buffer)
 train_data = train_data.batch(batch_size).prefetch(1)
 
-val_data = process_list(val_data)
-val_data = tf.data.Dataset.from_tensor_slices(val_data)
-val_batch_size = int(batch_size*val_prop)
-val_data = val_data.shuffle(buffer).batch(val_batch_size).prefetch(1)
+if val_prop != 0.0:
+    val_data = process_list(val_data)
+    val_data = tf.data.Dataset.from_tensor_slices(val_data)
+    val_batch_size = int(batch_size*val_prop)
+    val_data = val_data.shuffle(buffer).batch(val_batch_size).prefetch(1)
 
 print(psutil.virtual_memory())
 ###############################################################################
@@ -140,7 +147,7 @@ semester = keras.layers.Embedding(input_dim=total_levels*num_semesters+1,
     output_dim=embed_dim,
     mask_zero=True,
     embeddings_initializer=keras.initializers.GlorotNormal(),
-    name="level-semester_embed",
+    name="level-semester_embeds",
     )
 semester_vec = semester(combined)
 
@@ -158,7 +165,7 @@ embed_subjects = keras.layers.Embedding(input_dim=total_subjects+1,
     output_dim=embed_dim,
     mask_zero=True,
     embeddings_initializer=keras.initializers.GlorotNormal(),
-    name="asignaturas_embeds",
+    name="asignatura_embeds",
     )
 subjects_tensor = embed_subjects(input_subjects)
 
@@ -237,6 +244,7 @@ encoder.compile(loss=tf.losses.MeanSquaredError(),
     )
 import time
 init = time.time()
+"""
 h = encoder.fit(train_data,
                 epochs=total_epochs,
                 validation_data=val_data,
@@ -244,7 +252,7 @@ h = encoder.fit(train_data,
                 use_multiprocessing=True,
                 workers=tf.data.experimental.AUTOTUNE
                 )
-
+"""
 fin = time.time()
 print("Tiempo entrenando: ", int((fin - init)//60), "m ", round((fin-init)%60, 1), "s")
 
@@ -255,15 +263,18 @@ def plot_loss(type, history):
     plt.legend(handles=[l, v], loc='upper right')
     plt.show()
 
-plot_loss("loss", h)
-plot_loss("mae", h)
+#plot_loss("loss", h)
+#plot_loss("mae", h)
 
 #[ploss] = plt.semilogx(h.history["lr"], h.history["loss"], label="loss")
 #[pmae] = plt.semilogx(h.history["lr"], h.history["val_loss"], label="val_loss")
 #plt.legend(handles=[ploss, pmae], loc='upper right')
 #plt.show()
 
-#run_savedir = get_run_dir("records//glorot/5bit-dim/noise_s08-p04")
-#encoder.save(run_savedir.as_posix()+'/subj_focus.h5')
+run_savedir = get_run_dir("records/glorot/5bit-dim/noise_s08-p04")
+encoder.save(run_savedir.as_posix()+'/subj_focus.h5')
+
+# encoder = keras.models.load_model("records/glorot/5bit-dim/noise_s08-p04/subj_focus.h5")
+
 
 
