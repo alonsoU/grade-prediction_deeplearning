@@ -25,17 +25,21 @@ with open(path) as file:
     df = pd.read_csv(file).iloc[:, 1:]
     names = ['sede', 'ano', 'curso', 'semestre', 'asignatura',
              'profesor-rut']
-    print(df)
-    cats = df.drop(columns=["nota", "sede", "ano", "semestre"])
+    cats = df.drop(columns=["nota", "sede", "ano", "semestre", "curso"])
     # nested dict{names:{categories: _ }}
     nest = {}
+
 for column in cats:
-    try:
-        layer = encoder.get_layer(name="".join([column, "_embed"]))
-        nest[column] = {value:{i+1:list(layer(i+1))} for i, value in enumerate(sorted(cats[column].unique()))}
-    except ValueError:
-        pass
+    print(column)
+    sw = True
+    layer = encoder.get_layer(name="".join([column, "_embeds"]))
+    if sw:
+        print(list(layer(2).numpy()))
+        sw = False
+    nest[column] = {value:{i+1:[float(n) for n in layer(i+1).numpy()]} for i, value in enumerate(sorted(cats[column].unique()))}
+#print(nest)
+
 jsons = get_run_dir("jsons")
-path_str = str(jsons)+"embeddings.json"
-with open(path, 'w') as f:  # writing JSON object
+json_path = str(jsons)+"\embeddings.json"
+with open(json_path, 'w') as f:  # writing JSON object
     json.dump(nest, f)
