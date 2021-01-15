@@ -30,12 +30,7 @@ with open(path) as file:
     nest = {}
 
 for column in cats:
-    print(column)
-    sw = True
     layer = encoder.get_layer(name="".join([column, "_embeds"]))
-    if sw:
-        print(list(layer(2).numpy()))
-        sw = False
     nest[column] = {value:{i+1:[float(n) for n in layer(i+1).numpy()]} for i, value in enumerate(sorted(cats[column].unique()))}
 #print(nest)
 
