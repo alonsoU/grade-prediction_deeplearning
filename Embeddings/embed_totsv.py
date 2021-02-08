@@ -41,6 +41,8 @@ for column in cats:
         mask = df[column] == value
         more_meta = round(df['nota'].loc[mask].mean(), 2)
         values = [value, str(more_meta)]
+
+
         out_meta.write('\t'.join(values) + "\n")
         out_vec.write('\t'.join([str(x) for x in vec.numpy()]) + "\n")
     out_meta.close()
