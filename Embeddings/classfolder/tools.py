@@ -60,9 +60,9 @@ def GrayEncoder(vector):#de una lista de notas, genera matriz de notas en códig
     b_count = 0
     for bit in bits:
         if bit == 1:
-        marks_matrix[count][b_count] = 1
-        b_count += 1
-        count += 1
+            marks_matrix[count][b_count] = 1
+            b_count += 1
+            count += 1
     return marks_matrix
 """
 class PCA():

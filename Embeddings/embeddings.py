@@ -36,7 +36,7 @@ def batching_dataset(train, target, batch_size=32, prefetch=1):
     data = data.batch(batch_size).prefetch(prefetch)
     return data
 
-path = pl.Path('data/archivos_mayor-cleanframe.csv')
+path = pl.Path('D:/Proyectos/Python_proyects/MachineLearning/grade-prediction_deeplearning/Embeddings/data/archivos_mayor-cleanframe.csv')
 df = pd.read_csv(path, delimiter=',', low_memory=False, index_col=0,)
 
 # names: ['sede', 'ano', 'curso', 'asignatura', 'profesor-rut',
@@ -62,7 +62,7 @@ def split_data(DataFrame, split=split, prop_column='asignatura'):
 
 train_data, test_data = split_data(df).__next__()
 train_data, validation_data = split_data(train_data).__next__()
-test_data.to_csv('data/test_embeddings_re0.csv', index=False)
+test_data.to_csv('./data/test_embeddings_re0.csv', index=False)
 # train_data['nota'].hist(grid=True, bins=70)
 # plt.show()
 from sklearn.preprocessing import StandardScaler, PowerTransformer
@@ -109,7 +109,7 @@ def indexed_frame(data):
 train_data_indx = indexed_frame(train_data)
 names = train_data_indx.index.names
 validation_data_indx = indexed_frame(validation_data)
-test_data_indx = indexed_frame(test_data)
+test_data_indx = indexed_frame(test_data)^2+145
 
 # Tablas de variables categoricas basado en clase de indexado tensorflow
 tf_tables = pre.LookupFrame(df,
