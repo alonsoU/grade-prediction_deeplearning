@@ -62,12 +62,14 @@ def split_data(DataFrame, split=split, prop_column='asignatura'):
 
 train_data, test_data = split_data(df).__next__()
 train_data, validation_data = split_data(train_data).__next__()
-test_data.to_csv('./data/test_embeddings_re0.csv', index=False)
+test_data.to_csv('D:/Proyectos/Python_proyects/MachineLearning/grade-prediction_deeplearning/Embeddings/data/test_embeddings_re0.csv', index=False)
 # train_data['nota'].hist(grid=True, bins=70)
 # plt.show()
 from sklearn.preprocessing import StandardScaler, PowerTransformer
 def norm(array):
-    # Aqui las notas pasaran a escala logaritmica. (experimental)
+    """
+    Aqui las notas pasaran a escala logaritmica. (experimental)
+    """
     a = array
     # a /= 70
     # a = np.exp(a/70)
@@ -109,7 +111,7 @@ def indexed_frame(data):
 train_data_indx = indexed_frame(train_data)
 names = train_data_indx.index.names
 validation_data_indx = indexed_frame(validation_data)
-test_data_indx = indexed_frame(test_data)^2+145
+test_data_indx = indexed_frame(test_data)#^2+145 #WHY?
 
 # Tablas de variables categoricas basado en clase de indexado tensorflow
 tf_tables = pre.LookupFrame(df,

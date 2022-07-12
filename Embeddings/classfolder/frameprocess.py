@@ -10,10 +10,10 @@ import datetime
 import tensorflow as tf
 
 class LookupFrame():
-    # """Genera listado de valores tomados por las columnas del o los dtypes dados.
+    """Genera listado de valores tomados por las columnas del o los dtypes dados.
         # Dataframe: pandas.Dataframe
         # dtypes:
-    # """
+    """
     def __init__(self,
         DataFrame,
         keys=None,
@@ -67,7 +67,7 @@ class LookupFrame():
             # bucket para tratar variables no vistas en el DataFrame original,
             # y corresponde a una proporción de la misma.
             length = len(values)
-            num_bucket = max(int(length * self.prop_bucket), 5)
+            num_bucket = max(int(length * self.prop_bucket), 5) # 5 in bucket minimum
             # Es importrante para tf el dtype
             # Es conveniente empezar de 1, debido a que ciertas layers de
             # keras tienen por defecto el digito 0 como mask.
